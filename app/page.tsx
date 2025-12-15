@@ -3,14 +3,36 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export default async function Home() {
-  const cookieStore = cookies()
+  // HÄR VAR FELET: Vi lade till "await" framför cookies()
+  const cookieStore = await cookies()
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Ignorera detta fel på serversidan
+          }
+        },
+      },
+    }
   )
-
-  const { data: listings } = await supabase.from('listings').select('*').eq('status', 'active').order('created_at', { ascending: false }).limit(10)
+  
+  const { data: listings } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(10)
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -18,7 +40,7 @@ export default async function Home() {
         <h1 className="text-2xl font-bold">Sök här!</h1>
         <Link href="/dashboard/create" className="bg-blue-600 text-white px-4 py-2 rounded">Sälj något</Link>
       </header>
-
+      
       <div className="max-w-6xl mx-auto p-6">
         <h2 className="text-xl font-semibold mb-4">Senaste annonserna</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -32,6 +54,9 @@ export default async function Home() {
               <p className="text-gray-500 text-sm">{ad.location}</p>
             </div>
           ))}
+          {(!listings || listings.length === 0) && (
+            <p className="text-gray-500">Inga annonser ännu.</p>
+          )}
         </div>
       </div>
     </main>
