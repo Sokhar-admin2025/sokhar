@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js' // <--- Vi använder standardpaketet
+import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
 // Vi skapar kopplingen manuellt här
@@ -21,8 +21,11 @@ export default function LoginPage() {
     setLoading(true)
     setMessage('')
     
+    // .trim() tar bort osynliga mellanslag före och efter
+    const cleanEmail = email.trim()
+
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: cleanEmail,
       password,
     })
 
@@ -38,28 +41,29 @@ export default function LoginPage() {
   const handleSignUp = async () => {
     setLoading(true)
     setMessage('')
+
+    // .trim() tar bort osynliga mellanslag
+    const cleanEmail = email.trim()
     
     const { error } = await supabase.auth.signUp({
-      email,
+      email: cleanEmail,
       password,
-      options: {
-        emailRedirectTo: `${location.origin}/auth/callback`,
-      },
     })
 
     if (error) {
       setMessage('Kunde inte skapa konto: ' + error.message)
       setLoading(false)
     } else {
-      setMessage('Konto skapat! Kolla din mail (om du har det påslaget) eller logga in.')
+      setMessage('Konto skapat! Eftersom email-bekräftelse är avstängt borde du kunna logga in nu.')
       setLoading(false)
+      // Vi provar att logga in användaren direkt eller be dem logga in
     }
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
       <div className="w-full max-w-md space-y-4 rounded-lg border p-8 shadow-lg bg-white text-black">
-        <h1 className="text-2xl font-bold text-center mb-6">Logga in</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">Logga in / Skapa konto</h1>
         
         <div className="space-y-2">
           <label className="text-sm font-medium">E-post</label>
@@ -77,7 +81,7 @@ export default function LoginPage() {
           <input
             className="w-full rounded border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 outline-none"
             type="password"
-            placeholder="••••••••"
+            placeholder="Minst 6 tecken"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
