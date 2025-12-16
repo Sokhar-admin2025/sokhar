@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
-// Vi skapar kopplingen manuellt här
+// Kopplingen till Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -14,14 +14,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
+  
+  // Vi delar upp meddelandet i text och typ (error eller success)
+  const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null)
+  
   const router = useRouter()
 
   const handleSignIn = async () => {
     setLoading(true)
-    setMessage('')
-    
-    // .trim() tar bort osynliga mellanslag före och efter
+    setMessage(null)
     const cleanEmail = email.trim()
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -30,19 +31,21 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setMessage('Fel: ' + error.message)
+      setMessage({ text: 'Fel: ' + error.message, type: 'error' })
       setLoading(false)
     } else {
-      router.push('/')
-      router.refresh()
+      // Lyckad inloggning
+      setMessage({ text: 'Inloggad! Skickar vidare...', type: 'success' })
+      setTimeout(() => {
+        router.push('/') // Skickar användaren till startsidan
+        router.refresh()
+      }, 1000)
     }
   }
 
   const handleSignUp = async () => {
     setLoading(true)
-    setMessage('')
-
-    // .trim() tar bort osynliga mellanslag
+    setMessage(null)
     const cleanEmail = email.trim()
     
     const { error } = await supabase.auth.signUp({
@@ -51,12 +54,11 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setMessage('Kunde inte skapa konto: ' + error.message)
+      setMessage({ text: 'Kunde inte skapa konto: ' + error.message, type: 'error' })
       setLoading(false)
     } else {
-      setMessage('Konto skapat! Eftersom email-bekräftelse är avstängt borde du kunna logga in nu.')
+      setMessage({ text: 'Konto skapat! Du kan nu logga in.', type: 'success' })
       setLoading(false)
-      // Vi provar att logga in användaren direkt eller be dem logga in
     }
   }
 
@@ -87,9 +89,14 @@ export default function LoginPage() {
           />
         </div>
 
+        {/* Här kollar vi om meddelandet är error (rött) eller success (grönt) */}
         {message && (
-          <div className="p-3 bg-red-100 text-red-700 rounded text-sm text-center">
-            {message}
+          <div className={`p-3 rounded text-sm text-center ${
+            message.type === 'error' 
+              ? 'bg-red-100 text-red-700' 
+              : 'bg-green-100 text-green-700'
+          }`}>
+            {message.text}
           </div>
         )}
 
