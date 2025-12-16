@@ -82,7 +82,7 @@ export default function CreateAd() {
           <input name="location" required placeholder="Stad" className="w-full p-2 border rounded" />
         </div>
         <select name="category" className="w-full p-2 border rounded">
-          <option>Övrigt</option><option>Fordon</option><option>Elektronik</option>
+          <option>Övrigt</option><option>Fordon</option><option>Elektronik</option><option>Kläder</option>
         </select>
 
         <div className="border-2 border-dashed p-4 rounded text-center">
