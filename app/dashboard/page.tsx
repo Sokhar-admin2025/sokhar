@@ -180,7 +180,7 @@ export default function Dashboard() {
               <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">🗑️</span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">Ska vi verkligen göra slut? 💔</h3>
+              <h3 className="text-2xl font-bold text-gray-900">Är du verkligen säker?? 💔</h3>
               <p className="text-gray-500 mt-2">
                 Du är på väg att radera <strong>{adToDelete?.title}</strong>. 
                 Går du vidare så försvinner den för gott. Poff! 💨
@@ -227,17 +227,6 @@ export default function Dashboard() {
                   <span className="text-sm text-gray-700">Vill bara ta bort den (Inga frågor, tack)</span>
                 </label>
 
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100">
-                  <input 
-                    type="radio" 
-                    name="reason" 
-                    value="private" 
-                    checked={deleteReason === 'private'}
-                    onChange={(e) => setDeleteReason(e.target.value)}
-                    className="w-4 h-4 text-black border-gray-300 focus:ring-black"
-                  />
-                  <span className="text-sm text-gray-700">Det är privat (Schysst om ni inte snokar)</span>
-                </label>
               </div>
             </div>
 
