@@ -92,24 +92,37 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-4">
               {ads.map((ad) => (
-                <div key={ad.id} className="flex gap-4 p-4 border rounded hover:bg-gray-50 transition">
-                  {/* Visa bild om det finns, annars grå ruta */}
-                  <div className="h-20 w-20 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
-                    {ad.images && ad.images[0] ? (
-                      <img src={ad.images[0]} alt={ad.title} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">Ingen bild</div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg">{ad.title}</h3>
-                    <p className="text-gray-600 text-sm mb-2">{ad.price} kr</p>
-                    <span className="inline-block px-2 py-1 text-xs rounded bg-green-100 text-green-800">
-                      {ad.status === 'active' ? 'Aktiv' : 'Såld'}
-                    </span>
-                  </div>
-                </div>
+                // Byt ut biten inuti {ads.map((ad) => ( ... ))} mot detta:
+
+<div 
+  key={ad.id} 
+  // Här lägger vi till klick-funktionen:
+  onClick={() => router.push(`/annons/${ad.id}`)}
+  className="flex gap-4 p-4 border rounded hover:bg-gray-50 transition cursor-pointer" // cursor-pointer gör att musen blir en hand
+>
+  {/* Bild-delen (samma som förut) */}
+  <div className="h-20 w-20 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
+    {ad.images && ad.images[0] ? (
+      <img src={ad.images[0]} alt={ad.title} className="h-full w-full object-cover" />
+    ) : (
+      <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">Ingen bild</div>
+    )}
+  </div>
+  
+  {/* Text-delen */}
+  <div className="flex-1">
+    <h3 className="font-bold text-lg">{ad.title}</h3>
+    <p className="text-gray-600 text-sm mb-2">{ad.price} kr</p>
+    <div className="flex gap-2">
+      <span className="inline-block px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+        {ad.status === 'active' ? 'Aktiv' : 'Såld'}
+      </span>
+      <span className="inline-block px-2 py-1 text-xs rounded bg-gray-100 text-gray-600">
+        Klicka för att visa
+      </span>
+    </div>
+  </div>
+</div>
               ))}
             </div>
           )}
