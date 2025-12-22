@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js' // Standard-koppling
+import { useState, useEffect } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
-// Koppla upp mot Supabase direkt i filen
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -13,7 +12,30 @@ const supabase = createClient(
 export default function CreateAd() {
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
+  
+  // Nytt state: Vi kollar om vi är behöriga
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  
   const router = useRouter()
+
+  // 1. Dörrvakten: Körs direkt när sidan öppnas
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        // Om ingen användare finns -> Skicka till login direkt
+        router.push('/login')
+      } else {
+        // Om användare finns -> Spara user och visa sidan
+        setUser(user)
+        setIsCheckingAuth(false)
+      }
+    }
+    
+    checkUser()
+  }, [router])
 
   const handleFiles = (e: any) => {
     const selected = Array.from(e.target.files as FileList)
@@ -26,24 +48,17 @@ export default function CreateAd() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault()
+    if (!user) return // Dubbelkoll (ska inte kunna hända pga dörrvakten)
+
     setLoading(true)
     const form = new FormData(e.target)
 
-    // 1. Kolla vem som är inloggad
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      alert('Du verkar ha loggats ut. Logga in igen.')
-      router.push('/login')
-      return
-    }
-
     try {
-      // 2. Skapa själva annonsen i databasen
+      // Skapa annonsraden
       const { data: ad, error } = await supabase.from('listings').insert({
         title: form.get('title'),
         description: form.get('description'),
-        price: Number(form.get('price')), // Gör om text till siffra
+        price: Number(form.get('price')),
         category: form.get('category'),
         location: form.get('location'),
         user_id: user.id,
@@ -52,11 +67,9 @@ export default function CreateAd() {
 
       if (error) throw error
 
-      // 3. Ladda upp bilder (Om några valdes)
+      // Ladda upp bilder
       const imageUrls = []
-      
       for (const file of files) {
-        // Skapa ett unikt filnamn: annonsID / slumpnummer . filändelse
         const fileExt = file.name.split('.').pop()
         const fileName = `${ad.id}/${Math.random().toString(36).slice(2)}.${fileExt}`
 
@@ -66,7 +79,6 @@ export default function CreateAd() {
 
         if (uploadError) throw uploadError
 
-        // Hämta den publika länken till bilden
         const { data: { publicUrl } } = supabase.storage
           .from('listing-images')
           .getPublicUrl(fileName)
@@ -74,7 +86,7 @@ export default function CreateAd() {
         imageUrls.push(publicUrl)
       }
 
-      // 4. Uppdatera annonsen med bildlänkarna
+      // Spara bildlänkar
       if (imageUrls.length > 0) {
         await supabase
           .from('listings')
@@ -82,8 +94,6 @@ export default function CreateAd() {
           .eq('id', ad.id)
       }
 
-      // Klart! Skicka användaren till startsidan (eller dashboarden)
-      alert('Annons skapad!')
       router.push('/dashboard')
 
     } catch (error: any) {
@@ -94,6 +104,16 @@ export default function CreateAd() {
     }
   }
 
+  // 2. Visa en ladd-snurra medan dörrvakten kollar ID
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Kontrollerar inloggning...</p>
+      </div>
+    )
+  }
+
+  // 3. Om vi kommer hit är vi inloggade och formuläret visas
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex justify-center">
       <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-sm border border-gray-200">
