@@ -271,15 +271,15 @@ export default function Dashboard() {
               <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">💔</span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">Ska vi verkligen göra slut?</h3>
+              <h3 className="text-2xl font-bold text-gray-900">Är du säker??</h3>
               <p className="text-gray-500 mt-2">
                 Du är på väg att ta bort <strong>{adToDelete?.title}</strong>. 
-                Sista chansen att ångra sig! 💨
+                Sista chansen att ångra sig! Puff!💨
               </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">
-              <p className="text-sm font-semibold text-gray-700 mb-3">Bara av nyfikenhet, varför lämnar du oss?</p>
+              <p className="text-sm font-semibold text-gray-700 mb-3">Bara av nyfikenhet, varför tar du bort annonsen?</p>
               
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-100">
