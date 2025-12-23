@@ -94,43 +94,55 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* --- HERO SECTION --- */}
-      <div className="bg-blue-600 text-white py-16 px-4 text-center">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+      {/* --- HERO SECTION (DESIGN UPPDATERING) --- */}
+      <div className="relative bg-gray-900 py-32 px-4 text-center overflow-hidden">
+        
+        {/* Bakgrundsbild med mörk overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=1600&q=80" 
+            alt="Marketplace background" 
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900/90"></div>
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <h2 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight text-white drop-shadow-sm">
             {t.landing.hero.title}
           </h2>
-          <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-gray-200 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
             {t.landing.hero.subtitle}
           </p>
           
+          {/* Action-knapp */}
           <button 
             onClick={() => router.push('/dashboard/create')}
-            className="bg-white text-blue-600 px-8 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition transform hover:scale-105"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-blue-500/30 transition transform hover:-translate-y-1"
           >
             {t.landing.hero.cta}
           </button>
         </div>
       </div>
 
-      {/* --- SÖK & FILTER (NYTT) --- */}
-      <div className="max-w-6xl mx-auto p-6 -mt-8 relative z-10 w-full">
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+      {/* --- SÖK & FILTER (DESIGN UPPDATERING: Ligger nu omlott med Heron) --- */}
+      <div className="max-w-6xl mx-auto px-6 -mt-10 relative z-20 w-full mb-12">
+        <div className="bg-white rounded-xl shadow-xl p-6 md:p-8 border border-gray-100">
           
-          {/* Sökruta */}
-          <div className="mb-6">
+          {/* Sökfält med ikon */}
+          <div className="mb-6 relative">
+            <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <input 
               type="text"
               placeholder={t.landing.search.placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition hover:bg-white"
             />
           </div>
 
-          {/* Kategoriknappar */}
           <div className="flex flex-col md:flex-row gap-4 items-center">
-            <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               {t.landing.search.filterTitle}
             </span>
             <div className="flex flex-wrap gap-2">
@@ -138,10 +150,10 @@ export default function HomePage() {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                     selectedCategory === cat
-                      ? 'bg-black text-white shadow-md' // Aktiv
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200' // Inaktiv
+                      ? 'bg-gray-900 text-white shadow-md transform scale-105'
+                      : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50'
                   }`}
                 >
                   {cat}
@@ -220,11 +232,6 @@ export default function HomePage() {
           </div>
         )}
       </main>
-
-      {/* --- FOOTER --- */}
-      <footer className="bg-white border-t mt-auto py-8 text-center text-gray-400 text-sm">
-        <p>{t.landing.footer}</p>
-      </footer>
     </div>
   )
 }

@@ -62,13 +62,12 @@ export const DASHBOARD_TEXTS = {
   landing: {
     hero: {
       title: "Hitta fynd eller sälj det du inte behöver",
-      subtitle: "En enkel och smidig marknadsplats för allt från elektronik till gamla möbler.",
+      subtitle: "Sveriges tryggaste marknadsplats för allt från elektronik till gamla möbler.", // Lite vassare text
       cta: "Lägg in en annons gratis"
     },
     search: {
       placeholder: "Vad letar du efter idag? (t.ex. Cykel)",
       filterTitle: "Kategorier:",
-      // Dessa kategorier används för filtrering på startsidan
       categories: ["Alla", "Fordon", "Elektronik", "Kläder", "Möbler", "Övrigt"]
     },
     listings: {
@@ -77,7 +76,25 @@ export const DASHBOARD_TEXTS = {
       locationPrefix: "📍",
       readMore: "Läs mer"
     },
-    footer: "© 2025 Min Marknadsplats. Byggt med Next.js & Supabase."
+    // NY FOOTER-STRUKTUR
+    footer: {
+      brand: "Min Marknadsplats",
+      copyright: "© 2025 Min Marknadsplats. Alla rättigheter reserverade.",
+      columns: [
+        {
+          title: "Marknadsplatsen",
+          links: ["Om oss", "Så funkar det", "Hållbarhet", "Press"]
+        },
+        {
+          title: "Kundservice",
+          links: ["Kontakta oss", "Vanliga frågor", "Trygg affär", "Cookies"]
+        },
+        {
+          title: "Följ oss",
+          links: ["Instagram", "Facebook", "LinkedIn", "TikTok"]
+        }
+      ]
+    }
   },
 
   // --- DETALJSIDAN (Annons-sidan) ---
