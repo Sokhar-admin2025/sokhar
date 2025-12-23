@@ -23,11 +23,18 @@ export const DASHBOARD_TEXTS = {
     soldLabel: "Såld via oss ⭐",
     activeLabel: "Aktiv",
     noImage: "Ingen bild",
-    deleteTitle: "Radera annons" 
+    deleteTitle: "Radera annons",
+    // NYTT: Rubriker för historik-tabellen (Status är borttagen här)
+    historyHeaders: {
+      datePublished: "Publicerad",
+      title: "Rubrik",
+      price: "Pris",
+      dateSold: "Såld datum"
+    }
   },
   deleteModal: {
+    // Dina uppdaterade texter:
     title: "Är du verkligen säker?? 💔",
-    // Detta är en liten funktion som gör att vi kan baka in namnet på prylen i texten
     description: (itemTitle: string) => `Du är på väg att ta bort **${itemTitle}**. Sista chansen att ångra sig! 💨`,
     question: "Bara av nyfikenhet, varför vill du ta bort annonsen?",
     options: {

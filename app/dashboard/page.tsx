@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
-// HÄR IMPORTERAR VI DIN NYA STRUKTUR
-import { DASHBOARD_TEXTS } from '../lib/content' // Hämtar texten
-import Button from '../components/atoms/Button'  // Hämtar knappen
+import { DASHBOARD_TEXTS } from '../lib/content'
+import Button from '../components/atoms/Button'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -23,13 +22,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active')
 
-  // Modal-state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [adToDelete, setAdToDelete] = useState<any>(null)
   const [deleteReason, setDeleteReason] = useState('sold_here')
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Här gör vi en genväg till texten så vi slipper skriva DASHBOARD_TEXTS hela tiden
   const t = DASHBOARD_TEXTS
 
   useEffect(() => {
@@ -120,7 +117,6 @@ export default function Dashboard() {
           <p className="text-gray-600">{t.header.welcome} <span className="font-semibold">{user?.email}</span></p>
         </div>
         
-        {/* Här använder vi din nya Button-komponent! */}
         <Button variant="link" onClick={handleSignOut}>
           {t.header.logout}
         </Button>
@@ -174,14 +170,13 @@ export default function Dashboard() {
                     onClick={() => router.push(`/annons/${ad.id}`)}
                     className="group flex gap-4 p-4 border rounded hover:bg-gray-50 transition cursor-pointer relative"
                   >
-                    {/* Soptunnan med nya knappen */}
                     <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
                         <Button 
                             variant="icon" 
                             onClick={(e) => promptDelete(e, ad)}
                             title={t.listing.deleteTitle}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </Button>
                     </div>
 
@@ -204,7 +199,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* HISTORIK */}
+        {/* HISTORIK (UPPDATERAD TABELL - Status borttagen, datum tillagt) */}
         {activeTab === 'history' && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {soldAds.length === 0 ? (
@@ -216,19 +211,34 @@ export default function Dashboard() {
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
                     <tr>
-                      <th className="px-6 py-3">Datum</th>
-                      <th className="px-6 py-3">Rubrik</th>
-                      <th className="px-6 py-3">Pris</th>
-                      <th className="px-6 py-3">Status</th>
+                      <th className="px-6 py-3">{t.listing.historyHeaders.datePublished}</th>
+                      <th className="px-6 py-3">{t.listing.historyHeaders.title}</th>
+                      <th className="px-6 py-3">{t.listing.historyHeaders.price}</th>
+                      <th className="px-6 py-3">{t.listing.historyHeaders.dateSold}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {soldAds.map((ad) => (
                       <tr key={ad.id} className="bg-white border-b hover:bg-gray-50">
-                        <td className="px-6 py-4">{new Date(ad.created_at).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">{ad.title}</td>
-                        <td className="px-6 py-4">{ad.price} kr</td>
-                        <td className="px-6 py-4 text-green-600"><span className="font-medium">{t.listing.soldLabel}</span></td>
+                        {/* 1. SKAPAD DATUM */}
+                        <td className="px-6 py-4">
+                          {new Date(ad.created_at).toLocaleDateString()}
+                        </td>
+                        
+                        {/* 2. TITEL */}
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {ad.title}
+                        </td>
+                        
+                        {/* 3. PRIS */}
+                        <td className="px-6 py-4">
+                          {ad.price} kr
+                        </td>
+                        
+                        {/* 4. SÅLD DATUM (Status-texten borttagen) */}
+                        <td className="px-6 py-4 text-gray-900">
+                          {ad.deleted_at ? new Date(ad.deleted_at).toLocaleDateString() : '-'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -250,7 +260,6 @@ export default function Dashboard() {
                 <span className="text-3xl">💔</span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900">{t.deleteModal.title}</h3>
-              {/* Här blandar vi in titeln säkert i texten */}
               <p className="text-gray-500 mt-2" dangerouslySetInnerHTML={{ __html: t.deleteModal.description(adToDelete?.title).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}></p>
             </div>
 
@@ -298,13 +307,11 @@ export default function Dashboard() {
 
             <div className="flex gap-3">
               <div className="w-full">
-                {/* Ångra-knapp (Ghost) */}
                 <Button variant="ghost" className="w-full" onClick={() => setIsDeleteModalOpen(false)}>
                     {t.deleteModal.buttons.cancel}
                 </Button>
               </div>
               <div className="w-full">
-                {/* Radera-knapp (Danger) */}
                 <Button variant="danger" className="w-full" onClick={confirmDelete} disabled={isDeleting}>
                     {isDeleting ? t.deleteModal.buttons.confirm : t.deleteModal.buttons.deleteNow}
                 </Button>
