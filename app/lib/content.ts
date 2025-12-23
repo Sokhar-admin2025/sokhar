@@ -106,6 +106,16 @@ export const DASHBOARD_TEXTS = {
     backLink: "← Tillbaka till dashboard",
     form: {
       title: { label: "Rubrik", placeholder: "T.ex. Röd racercykel" },
-      // Dessa alternativ används i dropdown-menyn när man skapar annons
       category: { label: "Kategori", options: ["Fordon", "Elektronik", "Kläder", "Möbler", "Övrigt"] },
-      price: { label: "Pr
+      price: { label: "Pris (kr)", placeholder: "0" },
+      location: { label: "Plats", placeholder: "T.ex. Stockholm, Södermalm" },
+      description: { label: "Beskrivning", placeholder: "Berätta om skicket, ålder och annat viktigt..." },
+      image: { label: "Bilder", uploadBtn: "Välj bilder", uploading: "Laddar upp..." }
+    },
+    submit: {
+      btn: "Publicera annons",
+      loading: "Skapar..."
+    },
+    success: "Annonsen publicerad! Skickar dig tillbaka..."
+  }
+}
