@@ -41,13 +41,17 @@ export default function CreateListing() {
       const fileName = `${Math.random()}.${fileExt}`
       const filePath = `${fileName}`
 
+      // ÄNDRING HÄR: Vi använder 'listing-images' istället för 'images'
       const { error: uploadError } = await supabase.storage
-        .from('images')
+        .from('listing-images') 
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
 
-      const { data } = supabase.storage.from('images').getPublicUrl(filePath)
+      // ÄNDRING HÄR OCKSÅ: Samma bucket-namn här
+      const { data } = supabase.storage
+        .from('listing-images')
+        .getPublicUrl(filePath)
       
       // Lägg till bilden i listan
       setImages([...images, data.publicUrl])
