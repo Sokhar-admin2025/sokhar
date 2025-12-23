@@ -1,4 +1,5 @@
-// app/lib/content.ts
+// SOURCE OF TRUTH
+// Denna fil innehåller all text för hela applikationen.
 
 export const DASHBOARD_TEXTS = {
   // --- GEMENSAMT / NAVIGATION ---
@@ -8,7 +9,7 @@ export const DASHBOARD_TEXTS = {
     sellBtn: "Sälj något"
   },
 
-  // --- DASHBOARD (Det du redan har) ---
+  // --- DASHBOARD ---
   header: {
     title: "Min Sida",
     welcome: "Inloggad som:",
@@ -55,7 +56,7 @@ export const DASHBOARD_TEXTS = {
     }
   },
 
-  // --- STARTSIDAN (NYTT) ---
+  // --- STARTSIDAN ---
   landing: {
     hero: {
       title: "Hitta fynd eller sälj det du inte behöver",
@@ -65,7 +66,6 @@ export const DASHBOARD_TEXTS = {
     search: {
       placeholder: "Vad letar du efter idag? (t.ex. Cykel)",
       filterTitle: "Kategorier:",
-      // Dessa måste matcha vad vi sparar i databasen exakt
       categories: ["Alla", "Fordon", "Elektronik", "Kläder", "Möbler", "Övrigt"]
     },
     listings: {
@@ -75,11 +75,7 @@ export const DASHBOARD_TEXTS = {
       readMore: "Läs mer"
     },
     footer: "© 2025 Min Marknadsplats. Byggt med Next.js & Supabase."
-  }
-  // app/lib/content.ts
-
-export const DASHBOARD_TEXTS = {
-  // ... (behåll allt annat ovanför precis som det är) ...
+  },
 
   // --- DETALJSIDAN (NYTT) ---
   details: {
@@ -100,5 +96,4 @@ export const DASHBOARD_TEXTS = {
     },
     noImage: "Ingen bild tillgänglig"
   }
-}
 }
