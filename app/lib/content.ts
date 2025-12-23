@@ -1,6 +1,14 @@
 // app/lib/content.ts
 
 export const DASHBOARD_TEXTS = {
+  // --- GEMENSAMT / NAVIGATION ---
+  navigation: {
+    brand: "🛒 Min Marknadsplats",
+    myPage: "Min sida",
+    sellBtn: "Sälj något"
+  },
+
+  // --- DASHBOARD (Det du redan har) ---
   header: {
     title: "Min Sida",
     welcome: "Inloggad som:",
@@ -24,7 +32,6 @@ export const DASHBOARD_TEXTS = {
     activeLabel: "Aktiv",
     noImage: "Ingen bild",
     deleteTitle: "Radera annons",
-    // NYTT: Rubriker för historik-tabellen (Status är borttagen här)
     historyHeaders: {
       datePublished: "Publicerad",
       title: "Rubrik",
@@ -33,7 +40,6 @@ export const DASHBOARD_TEXTS = {
     }
   },
   deleteModal: {
-    // Dina uppdaterade texter:
     title: "Är du verkligen säker?? 💔",
     description: (itemTitle: string) => `Du är på väg att ta bort **${itemTitle}**. Sista chansen att ångra sig! 💨`,
     question: "Bara av nyfikenhet, varför vill du ta bort annonsen?",
@@ -47,5 +53,27 @@ export const DASHBOARD_TEXTS = {
       confirm: "Sopar...",
       deleteNow: "Radera nu"
     }
+  },
+
+  // --- STARTSIDAN (NYTT) ---
+  landing: {
+    hero: {
+      title: "Hitta fynd eller sälj det du inte behöver",
+      subtitle: "En enkel och smidig marknadsplats för allt från elektronik till gamla möbler.",
+      cta: "Lägg in en annons gratis"
+    },
+    search: {
+      placeholder: "Vad letar du efter idag? (t.ex. Cykel)",
+      filterTitle: "Kategorier:",
+      // Dessa måste matcha vad vi sparar i databasen exakt
+      categories: ["Alla", "Fordon", "Elektronik", "Kläder", "Möbler", "Övrigt"]
+    },
+    listings: {
+      header: "Senaste annonserna",
+      empty: "Inga annonser hittades som matchar din sökning. 🕵️‍♂️",
+      locationPrefix: "📍",
+      readMore: "Läs mer"
+    },
+    footer: "© 2025 Min Marknadsplats. Byggt med Next.js & Supabase."
   }
 }
