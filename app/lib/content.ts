@@ -126,4 +126,17 @@ export const DASHBOARD_TEXTS = {
     },
     success: "Annonsen publicerad! Skickar dig tillbaka..."
   }
-}
+// ... (behåll create ovanför)
+
+  // --- REDIGERA ANNONS (NYTT) ---
+  edit: {
+    header: "Redigera annons",
+    backLink: "← Avbryt",
+    loadingData: "Hämtar annonsuppgifter...",
+    submit: {
+      btn: "Spara ändringar",
+      loading: "Sparar..."
+    },
+    success: "Ändringarna sparade! Går tillbaka..."
+  }
+} // <-- Filens slut
