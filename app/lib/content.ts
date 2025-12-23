@@ -1,5 +1,6 @@
 // SOURCE OF TRUTH
 // Denna fil innehåller all text för hela applikationen.
+// Ändra här för att uppdatera text på alla sidor samtidigt.
 
 export const DASHBOARD_TEXTS = {
   // --- GEMENSAMT / NAVIGATION ---
@@ -9,7 +10,7 @@ export const DASHBOARD_TEXTS = {
     sellBtn: "Sälj något"
   },
 
-  // --- DASHBOARD ---
+  // --- DASHBOARD (Min sida) ---
   header: {
     title: "Min Sida",
     welcome: "Inloggad som:",
@@ -42,6 +43,7 @@ export const DASHBOARD_TEXTS = {
   },
   deleteModal: {
     title: "Är du verkligen säker?? 💔",
+    // Funktion för att baka in titeln dynamiskt
     description: (itemTitle: string) => `Du är på väg att ta bort **${itemTitle}**. Sista chansen att ångra sig! 💨`,
     question: "Bara av nyfikenhet, varför vill du ta bort annonsen?",
     options: {
@@ -56,7 +58,7 @@ export const DASHBOARD_TEXTS = {
     }
   },
 
-  // --- STARTSIDAN ---
+  // --- STARTSIDAN (Home) ---
   landing: {
     hero: {
       title: "Hitta fynd eller sälj det du inte behöver",
@@ -66,6 +68,7 @@ export const DASHBOARD_TEXTS = {
     search: {
       placeholder: "Vad letar du efter idag? (t.ex. Cykel)",
       filterTitle: "Kategorier:",
+      // Dessa kategorier används för filtrering på startsidan
       categories: ["Alla", "Fordon", "Elektronik", "Kläder", "Möbler", "Övrigt"]
     },
     listings: {
@@ -77,7 +80,7 @@ export const DASHBOARD_TEXTS = {
     footer: "© 2025 Min Marknadsplats. Byggt med Next.js & Supabase."
   },
 
-  // --- DETALJSIDAN (NYTT) ---
+  // --- DETALJSIDAN (Annons-sidan) ---
   details: {
     backToHome: "← Tillbaka till alla annonser",
     loading: "Laddar annons...",
@@ -95,5 +98,14 @@ export const DASHBOARD_TEXTS = {
       alert: "Chatt-funktion kommer i nästa uppdatering! Just nu får du låtsas mejla säljaren."
     },
     noImage: "Ingen bild tillgänglig"
-  }
-}
+  },
+
+  // --- SKAPA ANNONS (Create) ---
+  create: {
+    header: "Skapa ny annons",
+    backLink: "← Tillbaka till dashboard",
+    form: {
+      title: { label: "Rubrik", placeholder: "T.ex. Röd racercykel" },
+      // Dessa alternativ används i dropdown-menyn när man skapar annons
+      category: { label: "Kategori", options: ["Fordon", "Elektronik", "Kläder", "Möbler", "Övrigt"] },
+      price: { label: "Pr
