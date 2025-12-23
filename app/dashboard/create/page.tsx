@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
-// Importera text och komponenter
 import { DASHBOARD_TEXTS } from '../../lib/content'
 import Button from '../../components/atoms/Button'
 
@@ -16,7 +15,6 @@ const supabase = createClient(
 export default function CreateListing() {
   const router = useRouter()
   
-  // State för formuläret
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
@@ -24,36 +22,47 @@ export default function CreateListing() {
   const [category, setCategory] = useState('Övrigt')
   const [images, setImages] = useState<string[]>([])
   
-  // State för laddning
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // Hämta texter
   const t = DASHBOARD_TEXTS.create
 
+  // HÄR ÄR DEN NYA UPPDATERADE FUNKTIONEN
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!e.target.files || e.target.files.length === 0) return
+
+      // SPÄRR 1: Max 5 bilder
+      if (images.length >= 5) {
+        alert(t.form.image.errorTooMany)
+        return // Avbryt funktionen här
+      }
+
+      const file = e.target.files[0]
+
+      // SPÄRR 2: Max 2MB (2 * 1024 * 1024 bytes)
+      if (file.size > 2 * 1024 * 1024) {
+        alert(t.form.image.errorTooBig)
+        return // Avbryt funktionen här
+      }
+
       setUploading(true)
       
-      const file = e.target.files[0]
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random()}.${fileExt}`
       const filePath = `${fileName}`
 
-      // ÄNDRING HÄR: Vi använder 'listing-images' istället för 'images'
+      // Vi använder rätt bucket: listing-images
       const { error: uploadError } = await supabase.storage
-        .from('listing-images') 
+        .from('listing-images')
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
 
-      // ÄNDRING HÄR OCKSÅ: Samma bucket-namn här
       const { data } = supabase.storage
         .from('listing-images')
         .getPublicUrl(filePath)
       
-      // Lägg till bilden i listan
       setImages([...images, data.publicUrl])
 
     } catch (error: any) {
@@ -61,6 +70,11 @@ export default function CreateListing() {
     } finally {
       setUploading(false)
     }
+  }
+
+  // Funktion för att ta bort en bild innan man publicerar
+  const removeImage = (indexToRemove: number) => {
+    setImages(images.filter((_, index) => index !== indexToRemove))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,9 +100,8 @@ export default function CreateListing() {
 
       if (error) throw error
 
-      // Skicka användaren tillbaka till dashboarden
       router.push('/dashboard')
-      router.refresh() // Uppdatera så den nya annonsen syns direkt
+      router.refresh()
 
     } catch (error: any) {
       alert('Kunde inte skapa annons: ' + error.message)
@@ -100,7 +113,6 @@ export default function CreateListing() {
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-2xl mx-auto">
         
-        {/* Header och Tillbaka-knapp */}
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">{t.header}</h1>
           <Button variant="link" onClick={() => router.push('/dashboard')}>
@@ -110,7 +122,6 @@ export default function CreateListing() {
 
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 space-y-6">
           
-          {/* RUBRIK */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t.form.title.label}
@@ -125,7 +136,6 @@ export default function CreateListing() {
             />
           </div>
 
-          {/* KATEGORI */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t.form.category.label}
@@ -141,7 +151,6 @@ export default function CreateListing() {
             </select>
           </div>
 
-          {/* PRIS & PLATS (Två kolumner) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -171,7 +180,6 @@ export default function CreateListing() {
             </div>
           </div>
 
-          {/* BESKRIVNING */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t.form.description.label}
@@ -186,38 +194,50 @@ export default function CreateListing() {
             />
           </div>
 
-          {/* BILDER */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.form.image.label}
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                {t.form.image.label}
+              </label>
+              <span className="text-xs text-gray-400">
+                {images.length}/5 bilder
+              </span>
+            </div>
             
             <div className="flex flex-wrap gap-4 mb-3">
-              {/* Visa uppladdade bilder */}
+              {/* Visa uppladdade bilder med en liten kryss-knapp för att ta bort */}
               {images.map((url, index) => (
-                <div key={index} className="w-24 h-24 relative rounded-lg overflow-hidden border border-gray-200">
+                <div key={index} className="w-24 h-24 relative rounded-lg overflow-hidden border border-gray-200 group">
                   <img src={url} alt="Uppladdad" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition"
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
               
-              {/* Knapp för att ladda upp */}
-              <label className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-blue-400 transition">
-                <span className="text-2xl text-gray-400">+</span>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleImageUpload} 
-                  disabled={uploading}
-                  className="hidden" 
-                />
-              </label>
+              {/* Knapp för att ladda upp (Visas bara om man har färre än 5 bilder) */}
+              {images.length < 5 && (
+                <label className={`w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-blue-400 transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <span className="text-2xl text-gray-400">+</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    disabled={uploading}
+                    className="hidden" 
+                  />
+                </label>
+              )}
             </div>
             {uploading && <p className="text-sm text-blue-600 animate-pulse">{t.form.image.uploading}</p>}
           </div>
 
           <hr className="border-gray-100" />
 
-          {/* PUBLICERA-KNAPP */}
           <div className="pt-2">
             <Button 
               type="submit" 

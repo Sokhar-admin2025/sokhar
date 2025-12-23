@@ -110,7 +110,15 @@ export const DASHBOARD_TEXTS = {
       price: { label: "Pris (kr)", placeholder: "0" },
       location: { label: "Plats", placeholder: "T.ex. Stockholm, Södermalm" },
       description: { label: "Beskrivning", placeholder: "Berätta om skicket, ålder och annat viktigt..." },
-      image: { label: "Bilder", uploadBtn: "Välj bilder", uploading: "Laddar upp..." }
+      // ... (inuti create.form)
+      image: { 
+        label: "Bilder", 
+        uploadBtn: "Välj bilder", 
+        uploading: "Laddar upp...",
+        // NYA TEXTER HÄR:
+        errorTooMany: "Du kan max ladda upp 5 bilder. Ta bort en för att lägga till en ny.",
+        errorTooBig: "Bilden är för stor! Max 2MB tillåts."
+      }
     },
     submit: {
       btn: "Publicera annons",
