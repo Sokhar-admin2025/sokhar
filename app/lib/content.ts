@@ -76,4 +76,29 @@ export const DASHBOARD_TEXTS = {
     },
     footer: "© 2025 Min Marknadsplats. Byggt med Next.js & Supabase."
   }
+  // app/lib/content.ts
+
+export const DASHBOARD_TEXTS = {
+  // ... (behåll allt annat ovanför precis som det är) ...
+
+  // --- DETALJSIDAN (NYTT) ---
+  details: {
+    backToHome: "← Tillbaka till alla annonser",
+    loading: "Laddar annons...",
+    notFound: {
+      title: "Annonsen hittades inte",
+      link: "Gå till startsidan"
+    },
+    sections: {
+      description: "Beskrivning",
+      location: "Plats:",
+      category: "Kategori:"
+    },
+    contact: {
+      button: "Kontakta säljaren",
+      alert: "Chatt-funktion kommer i nästa uppdatering! Just nu får du låtsas mejla säljaren."
+    },
+    noImage: "Ingen bild tillgänglig"
+  }
+}
 }
