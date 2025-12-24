@@ -20,22 +20,26 @@ export default function ListingDetails() {
   const id = params?.id
   const t = DASHBOARD_TEXTS.details
 
-  // State
+  // State för Annons
   const [ad, setAd] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  
-  // NYTT: State för att hålla koll på vilken bild som visas just nu
   const [activeImage, setActiveImage] = useState<string | null>(null)
   
+  // State för Säljare (NYTT!)
+  const [sellerProfile, setSellerProfile] = useState<any>(null)
+  
+  // State för Applikation
+  const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<any>(null)
   const [contacting, setContacting] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
+      // 1. Vem är inloggad?
       const { data: { user } } = await supabase.auth.getUser()
       setCurrentUser(user)
 
-      const { data, error } = await supabase
+      // 2. Hämta annonsen
+      const { data: adData, error } = await supabase
         .from('listings')
         .select('*')
         .eq('id', id)
@@ -44,10 +48,21 @@ export default function ListingDetails() {
       if (error) {
         console.error('Error fetching listing:', error)
       } else {
-        setAd(data)
-        // Sätt första bilden som aktiv direkt när vi hämtat datan
-        if (data.images && data.images.length > 0) {
-          setActiveImage(data.images[0])
+        setAd(adData)
+        if (adData.images && adData.images.length > 0) {
+          setActiveImage(adData.images[0])
+        }
+
+        // 3. Hämta säljarens profil (NYTT!)
+        // Vi använder adData.user_id för att hitta rätt profil
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', adData.user_id)
+          .single()
+        
+        if (profileData) {
+          setSellerProfile(profileData)
         }
       }
       setLoading(false)
@@ -58,8 +73,6 @@ export default function ListingDetails() {
 
   const handleContact = async () => {
     if (!currentUser) {
-      // Spara URL:en så vi kan skicka tillbaka användaren hit efter login (Avancerat, men bra UX)
-      // För nu kör vi bara enkel redirect
       alert(DASHBOARD_TEXTS.messages.actions.loginToChat)
       router.push('/login')
       return
@@ -108,8 +121,6 @@ export default function ListingDetails() {
           
           {/* --- BILDGALLERI (VÄNSTER) --- */}
           <div className="flex flex-col gap-4">
-            
-            {/* Stor bild */}
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 aspect-square relative">
               {activeImage ? (
                 <img src={activeImage} alt={ad.title} className="w-full h-full object-cover transition-all duration-300" />
@@ -123,7 +134,6 @@ export default function ListingDetails() {
               </div>
             </div>
 
-            {/* Tumnaglar (Endast om det finns fler än 1 bild) */}
             {ad.images && ad.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {ad.images.map((img: string, index: number) => (
@@ -143,7 +153,7 @@ export default function ListingDetails() {
 
           {/* --- INFO (HÖGER) --- */}
           <div className="flex flex-col h-full">
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex-1">
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex-1 flex flex-col">
               
               <div className="mb-6">
                 <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{ad.title}</h1>
@@ -159,12 +169,44 @@ export default function ListingDetails() {
                 {ad.price} kr
               </div>
 
-              <div className="prose prose-sm text-gray-600 mb-8">
+              <div className="prose prose-sm text-gray-600 mb-8 flex-grow">
                 <h3 className="text-gray-900 font-semibold mb-2">{t.sections.description}</h3>
                 <p className="whitespace-pre-line">{ad.description}</p>
               </div>
 
-              <div className="mt-auto pt-6 border-t border-gray-100">
+              {/* --- NYTT: SÄLJARKORT --- */}
+              <div className="mt-auto">
+                <div className="mb-4 pt-6 border-t border-gray-100">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Säljare</p>
+                  
+                  <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    {/* Säljarens Bild */}
+                    <div className="w-12 h-12 rounded-full bg-white border border-gray-200 overflow-hidden flex-shrink-0">
+                      {sellerProfile?.avatar_url ? (
+                        <img src={sellerProfile.avatar_url} alt="Säljare" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300 text-xl">👤</div>
+                      )}
+                    </div>
+                    
+                    {/* Säljarens Namn */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-gray-900 truncate">
+                        {sellerProfile?.full_name || 'Anonym säljare'}
+                      </h4>
+                      {sellerProfile?.website && (
+                         <a href={sellerProfile.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
+                           {sellerProfile.website.replace(/^https?:\/\//, '')}
+                         </a>
+                      )}
+                      {!sellerProfile?.website && (
+                        <p className="text-xs text-gray-500">Medlem på Sokhar</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Kontaktknapp */}
                 {ad.status === 'active' ? (
                   <Button 
                     onClick={handleContact} 
