@@ -177,4 +177,29 @@ export const DASHBOARD_TEXTS = {
       loginToChat: "Logga in för att chatta"
     }
   },
+  // ... (här slutar messages-blocket), <--- GLÖM INTE KOMMA HÄR OVANFÖR
+
+  // --- INSTÄLLNINGAR & PROFIL ---
+  settings: {
+    title: "Inställningar",
+    back: "← Tillbaka till Dashboard",
+    sections: {
+      profile: "Min Profil",
+      privacy: "Integritet & Samtycke (GDPR)"
+    },
+    form: {
+      name: { label: "Namn / Företagsnamn", placeholder: "Ditt namn eller företag" },
+      website: { label: "Hemsida (valfritt)", placeholder: "https://..." },
+      avatar: { label: "Profilbild / Logotyp", changeBtn: "Byt bild", uploading: "Laddar upp..." },
+      consents: {
+        marketing: "Jag godkänner att ni skickar nyhetsbrev och erbjudanden.",
+        analytics: "Jag godkänner att ni samlar in anonym data för att förbättra tjänsten."
+      }
+    },
+    save: {
+      btn: "Spara ändringar",
+      loading: "Sparar...",
+      success: "Din profil har uppdaterats!"
+    }
+  },
 } // <-- Filens slut
