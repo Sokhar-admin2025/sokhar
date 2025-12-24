@@ -63,17 +63,19 @@ export default function SettingsPage() {
     getProfile()
   }, [router])
 
-  // 2. Spara ändringar
+  // 2. Spara ändringar (UPPDATERAD MED UPSERT)
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!userId) return
 
     setSaving(true)
     
-    // Uppdatera databasen
+    // Vi använder "upsert" istället för "update".
+    // Det betyder: Uppdatera om den finns, skapa ny om den saknas.
     const { error } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        id: userId, // <--- VIKTIGT: Vi måste skicka med ID vid upsert
         full_name: fullName,
         website,
         avatar_url: avatarUrl,
@@ -81,12 +83,11 @@ export default function SettingsPage() {
         consent_analytics: consentAnalytics,
         updated_at: new Date().toISOString()
       })
-      .eq('id', userId)
 
     setSaving(false)
 
     if (error) {
-      alert('Kunde inte spara. Försök igen.')
+      alert('Kunde inte spara: ' + error.message)
       console.error(error)
     } else {
       alert(t.save.success)
