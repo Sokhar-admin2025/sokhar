@@ -1,4 +1,18 @@
-// Här definierar vi hur datan ser ut i vår chatt
+export interface Listing {
+  id: string;
+  created_at: string;
+  title: string;
+  description: string;
+  price: number;
+  location: string;
+  category: string;
+  images: string[];
+  user_id: string;
+  status: 'active' | 'sold' | 'deleted';
+  seller_type?: 'private' | 'company';
+  company_name?: string;
+  external_url?: string;
+}
 
 export interface Conversation {
   id: string;
@@ -6,7 +20,6 @@ export interface Conversation {
   listing_id: string;
   buyer_id: string;
   seller_id: string;
-  // Vi kommer hämta info om annonsen samtidigt (Join)
   listing?: {
     title: string;
     images: string[];

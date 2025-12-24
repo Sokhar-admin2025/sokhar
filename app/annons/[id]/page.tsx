@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 import { DASHBOARD_TEXTS } from '../../lib/content'
 import Button from '../../components/atoms/Button'
-import { messageService } from '../../services/messageService' // <--- Ny import!
+import { messageService } from '../../services/messageService'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -25,16 +25,16 @@ export default function ListingDetails() {
   const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState<any>(null)
   
-  // State för kontakt-knappen
+  // NYTT: State för att hålla koll på vilken bild som visas just nu
+  const [activeImage, setActiveImage] = useState<string | null>(null)
+  
   const [contacting, setContacting] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
-      // 1. Vem är inloggad?
       const { data: { user } } = await supabase.auth.getUser()
       setCurrentUser(user)
 
-      // 2. Hämta annonsen
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -45,6 +45,10 @@ export default function ListingDetails() {
         console.error('Error fetching listing:', error)
       } else {
         setAd(data)
+        // Sätt första bilden som aktiv direkt när vi hämtat datan
+        if (data.images && data.images.length > 0) {
+          setActiveImage(data.images[0])
+        }
       }
       setLoading(false)
     }
@@ -52,16 +56,15 @@ export default function ListingDetails() {
     if (id) fetchData()
   }, [id])
 
-  // --- NY FUNKTION: HANTERA KONTAKT ---
   const handleContact = async () => {
-    // 1. Är man inloggad?
     if (!currentUser) {
-      alert(DASHBOARD_TEXTS.messages.actions.loginToChat) // "Logga in för att chatta"
+      // Spara URL:en så vi kan skicka tillbaka användaren hit efter login (Avancerat, men bra UX)
+      // För nu kör vi bara enkel redirect
+      alert(DASHBOARD_TEXTS.messages.actions.loginToChat)
       router.push('/login')
       return
     }
 
-    // 2. Är man ägaren? (Får inte chatta med sig själv)
     if (currentUser.id === ad.user_id) {
       alert("Du kan inte chatta på din egen annons! 😅")
       return
@@ -70,16 +73,12 @@ export default function ListingDetails() {
     setContacting(true)
 
     try {
-      // 3. Anropa vår Service för att skapa/hämta rummet
       const conversationId = await messageService.createConversation(
         ad.id,
-        currentUser.id, // Köpare (Du)
-        ad.user_id      // Säljare (Den som äger annonsen)
+        currentUser.id,
+        ad.user_id
       )
-
-      // 4. Skicka iväg användaren till Inkorgen
       router.push('/dashboard/messages')
-      
     } catch (error) {
       console.error(error)
       alert("Kunde inte starta chatten just nu.")
@@ -101,28 +100,48 @@ export default function ListingDetails() {
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-4xl mx-auto">
         
-        {/* Tillbaka-länk */}
         <Link href="/" className="inline-block mb-6 text-sm font-medium text-gray-500 hover:text-black transition">
           {t.backToHome}
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          {/* Vänster: Bild */}
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 aspect-square relative">
-            {ad.images && ad.images[0] ? (
-              <img src={ad.images[0]} alt={ad.title} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                {t.noImage}
+          {/* --- BILDGALLERI (VÄNSTER) --- */}
+          <div className="flex flex-col gap-4">
+            
+            {/* Stor bild */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 aspect-square relative">
+              {activeImage ? (
+                <img src={activeImage} alt={ad.title} className="w-full h-full object-cover transition-all duration-300" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                  {t.noImage}
+                </div>
+              )}
+              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                {ad.category}
+              </div>
+            </div>
+
+            {/* Tumnaglar (Endast om det finns fler än 1 bild) */}
+            {ad.images && ad.images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {ad.images.map((img: string, index: number) => (
+                  <button 
+                    key={index}
+                    onClick={() => setActiveImage(img)}
+                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition ${
+                      activeImage === img ? 'border-blue-600 ring-2 ring-blue-100' : 'border-transparent opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt={`Bild ${index + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
-              {ad.category}
-            </div>
           </div>
 
-          {/* Höger: Info */}
+          {/* --- INFO (HÖGER) --- */}
           <div className="flex flex-col h-full">
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex-1">
               
@@ -145,7 +164,6 @@ export default function ListingDetails() {
                 <p className="whitespace-pre-line">{ad.description}</p>
               </div>
 
-              {/* KONTAKT-KNAPP (Nu inkopplad!) */}
               <div className="mt-auto pt-6 border-t border-gray-100">
                 {ad.status === 'active' ? (
                   <Button 
@@ -161,7 +179,6 @@ export default function ListingDetails() {
                    </div>
                 )}
                 
-                {/* Info om att chatten är säker */}
                 <p className="text-xs text-center text-gray-400 mt-4">
                   🔒 Handla tryggt. All kommunikation sker via Sokhar.
                 </p>

@@ -1,14 +1,29 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@supabase/supabase-js'
 
-// Importera text och komponenter
+// Vi importerar texter och knappar som vanligt
 import { DASHBOARD_TEXTS } from './lib/content'
 import Button from './components/atoms/Button'
 
+// Vi definierar typen här lokalt för att slippa import-strul
+interface Listing {
+  id: string;
+  created_at: string;
+  title: string;
+  description: string;
+  price: number;
+  location: string;
+  category: string;
+  images: string[];
+  user_id: string;
+  status: string;
+}
+
+// Initiera Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -17,32 +32,29 @@ const supabase = createClient(
 export default function HomePage() {
   const router = useRouter()
   
-  // State för annonser
-  const [ads, setAds] = useState<any[]>([])          // Alla annonser från databasen
-  const [filteredAds, setFilteredAds] = useState<any[]>([]) // De vi visar just nu
+  const [ads, setAds] = useState<Listing[]>([])          
+  const [filteredAds, setFilteredAds] = useState<Listing[]>([]) 
   const [loading, setLoading] = useState(true)
 
-  // State för sökning
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Alla')
 
-  // Hämta texter
   const t = DASHBOARD_TEXTS
 
-  // 1. Hämta data vid start
+  // 1. Hämta data DIREKT (Utan service-fil)
   useEffect(() => {
     const fetchAds = async () => {
       const { data, error } = await supabase
         .from('listings')
         .select('*')
-        .eq('status', 'active') // Visa bara aktiva
+        .eq('status', 'active')
         .order('created_at', { ascending: false })
 
       if (error) {
         console.error('Fel vid hämtning:', error)
       } else {
-        setAds(data || [])
-        setFilteredAds(data || []) // Visa allt från början
+        setAds((data as Listing[]) || [])
+        setFilteredAds((data as Listing[]) || [])
       }
       setLoading(false)
     }
@@ -50,11 +62,10 @@ export default function HomePage() {
     fetchAds()
   }, [])
 
-  // 2. Filtrera listan när man söker eller byter kategori
+  // 2. Filtrera listan
   useEffect(() => {
     let result = ads
 
-    // Filtrera på text (Rubrik eller Beskrivning)
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase()
       result = result.filter(ad => 
@@ -63,7 +74,6 @@ export default function HomePage() {
       )
     }
 
-    // Filtrera på kategori
     if (selectedCategory !== 'Alla') {
       result = result.filter(ad => ad.category === selectedCategory)
     }
@@ -71,33 +81,49 @@ export default function HomePage() {
     setFilteredAds(result)
   }, [searchQuery, selectedCategory, ads])
 
+  // --- SÄKER NAVIGERING TILL "SÄLJ" ---
+  const handleSellClick = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      router.push('/dashboard/create')
+    } else {
+      router.push('/login')
+    }
+  }
+
+  const handleDashboardClick = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) router.push('/dashboard')
+    else router.push('/login')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       
       {/* --- HEADER --- */}
       <nav className="bg-white border-b p-4 sticky top-0 z-20 shadow-sm">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight cursor-pointer" onClick={() => window.scrollTo(0,0)}>
+          <h1 className="text-xl font-bold tracking-tight cursor-pointer text-gray-900" onClick={() => window.scrollTo(0,0)}>
             {t.navigation.brand}
           </h1>
           
           <div className="flex gap-4 items-center">
-            <Link href="/dashboard" className="text-sm font-medium hover:underline text-gray-700">
+            <button 
+              onClick={handleDashboardClick} 
+              className="text-sm font-medium hover:underline text-gray-700"
+            >
               {t.navigation.myPage}
-            </Link>
+            </button>
             
-            {/* ATOM: Sälj-knapp */}
-            <Button onClick={() => router.push('/dashboard/create')}>
+            <Button onClick={handleSellClick}>
               {t.navigation.sellBtn}
             </Button>
           </div>
         </div>
       </nav>
 
-      {/* --- HERO SECTION (DESIGN UPPDATERING) --- */}
+      {/* --- HERO SECTION --- */}
       <div className="relative bg-gray-900 py-32 px-4 text-center overflow-hidden">
-        
-        {/* Bakgrundsbild med mörk overlay */}
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=1600&q=80" 
@@ -115,9 +141,8 @@ export default function HomePage() {
             {t.landing.hero.subtitle}
           </p>
           
-          {/* Action-knapp */}
           <button 
-            onClick={() => router.push('/dashboard/create')}
+            onClick={handleSellClick}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-blue-500/30 transition transform hover:-translate-y-1"
           >
             {t.landing.hero.cta}
@@ -125,11 +150,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* --- SÖK & FILTER (DESIGN UPPDATERING: Ligger nu omlott med Heron) --- */}
+      {/* --- SÖK & FILTER --- */}
       <div className="max-w-6xl mx-auto px-6 -mt-10 relative z-20 w-full mb-12">
         <div className="bg-white rounded-xl shadow-xl p-6 md:p-8 border border-gray-100">
-          
-          {/* Sökfält med ikon */}
           <div className="mb-6 relative">
             <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <input 
@@ -191,7 +214,6 @@ export default function HomePage() {
                 key={ad.id}
                 className="group bg-white rounded-xl border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-300 overflow-hidden flex flex-col h-full"
               >
-                {/* Bild */}
                 <div className="aspect-square bg-gray-100 relative overflow-hidden">
                   {ad.images && ad.images[0] ? (
                     <img 
@@ -204,13 +226,11 @@ export default function HomePage() {
                       {t.listing.noImage}
                     </div>
                   )}
-                  {/* Kategori-badge */}
                   <div className="absolute top-2 left-2 bg-white/90 text-black text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
                     {ad.category}
                   </div>
                 </div>
 
-                {/* Info */}
                 <div className="p-4 flex flex-col flex-1">
                   <div className="mb-auto">
                     <h4 className="font-bold text-gray-900 text-lg mb-1 truncate">{ad.title}</h4>
