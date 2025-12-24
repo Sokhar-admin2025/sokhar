@@ -3,32 +3,38 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+import Link from 'next/link'
 
-// Importera text och komponenter
 import { DASHBOARD_TEXTS } from '../../lib/content'
 import Button from '../../components/atoms/Button'
+import { messageService } from '../../services/messageService' // <--- Ny import!
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 )
 
-export default function AdPage() {
-  const { id } = useParams()
+export default function ListingDetails() {
+  const params = useParams()
   const router = useRouter()
-  
-  const [ad, setAd] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  
-  // State för att hålla koll på vilken bild som visas just nu
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-
+  const id = params?.id
   const t = DASHBOARD_TEXTS.details
 
-  useEffect(() => {
-    const fetchAd = async () => {
-      if (!id) return
+  // State
+  const [ad, setAd] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  
+  // State för kontakt-knappen
+  const [contacting, setContacting] = useState(false)
 
+  useEffect(() => {
+    const fetchData = async () => {
+      // 1. Vem är inloggad?
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+
+      // 2. Hämta annonsen
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -36,121 +42,132 @@ export default function AdPage() {
         .single()
 
       if (error) {
-        console.error('Fel:', error)
+        console.error('Error fetching listing:', error)
       } else {
         setAd(data)
-        // Sätt första bilden som vald direkt när vi laddar
-        if (data.images && data.images.length > 0) {
-          setSelectedImage(data.images[0])
-        }
       }
       setLoading(false)
     }
 
-    fetchAd()
+    if (id) fetchData()
   }, [id])
 
-  if (loading) return <div className="p-20 text-center text-gray-500">{t.loading}</div>
+  // --- NY FUNKTION: HANTERA KONTAKT ---
+  const handleContact = async () => {
+    // 1. Är man inloggad?
+    if (!currentUser) {
+      alert(DASHBOARD_TEXTS.messages.actions.loginToChat) // "Logga in för att chatta"
+      router.push('/login')
+      return
+    }
+
+    // 2. Är man ägaren? (Får inte chatta med sig själv)
+    if (currentUser.id === ad.user_id) {
+      alert("Du kan inte chatta på din egen annons! 😅")
+      return
+    }
+
+    setContacting(true)
+
+    try {
+      // 3. Anropa vår Service för att skapa/hämta rummet
+      const conversationId = await messageService.createConversation(
+        ad.id,
+        currentUser.id, // Köpare (Du)
+        ad.user_id      // Säljare (Den som äger annonsen)
+      )
+
+      // 4. Skicka iväg användaren till Inkorgen
+      router.push('/dashboard/messages')
+      
+    } catch (error) {
+      console.error(error)
+      alert("Kunde inte starta chatten just nu.")
+    } finally {
+      setContacting(false)
+    }
+  }
+
+  if (loading) return <div className="p-10 text-center">{t.loading}</div>
   
   if (!ad) return (
-    <div className="p-20 text-center">
-      <h1 className="text-xl font-bold mb-4">{t.notFound.title}</h1>
-      <Button variant="link" onClick={() => router.push('/')}>
-        {t.notFound.link}
-      </Button>
+    <div className="p-10 text-center">
+      <h2 className="text-xl font-bold mb-4">{t.notFound.title}</h2>
+      <Link href="/" className="text-blue-600 underline">{t.notFound.link}</Link>
     </div>
   )
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         
         {/* Tillbaka-länk */}
-        <div className="mb-6">
-          <Button variant="link" onClick={() => router.push('/')}>
-            {t.backToHome}
-          </Button>
-        </div>
+        <Link href="/" className="inline-block mb-6 text-sm font-medium text-gray-500 hover:text-black transition">
+          {t.backToHome}
+        </Link>
 
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden md:flex min-h-[500px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          {/* --- VÄNSTER SIDA: BILDGALLERI --- */}
-          <div className="md:w-3/5 bg-gray-100 p-4 flex flex-col">
-            
-            {/* Stora bilden */}
-            <div className="flex-1 bg-white rounded-lg shadow-sm overflow-hidden flex items-center justify-center mb-4 relative aspect-video md:aspect-auto">
-              {selectedImage ? (
-                <img 
-                  src={selectedImage} 
-                  alt={ad.title} 
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="text-gray-400">{t.noImage}</div>
-              )}
-            </div>
-
-            {/* Tumnaglar (Småbilder) */}
-            {ad.images && ad.images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {ad.images.map((img: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(img)}
-                    className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition ${
-                      selectedImage === img 
-                        ? 'border-blue-600 ring-2 ring-blue-100' // Markerad bild
-                        : 'border-transparent hover:border-gray-300'
-                    }`}
-                  >
-                    <img src={img} alt={`Bild ${index + 1}`} className="w-full h-full object-cover" />
-                  </button>
-                ))}
+          {/* Vänster: Bild */}
+          <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 aspect-square relative">
+            {ad.images && ad.images[0] ? (
+              <img src={ad.images[0]} alt={ad.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                {t.noImage}
               </div>
             )}
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+              {ad.category}
+            </div>
           </div>
 
-          {/* --- HÖGER SIDA: INFO --- */}
-          <div className="md:w-2/5 p-8 flex flex-col">
-            
-            <div className="mb-auto">
-              {/* Topp-info */}
-              <div className="flex justify-between items-start mb-4">
-                <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wide">
-                  {ad.category}
-                </span>
-                <span className="text-gray-400 text-sm">
+          {/* Höger: Info */}
+          <div className="flex flex-col h-full">
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex-1">
+              
+              <div className="mb-6">
+                <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{ad.title}</h1>
+                <div className="flex items-center text-gray-500 text-sm">
+                  <span className="mr-2">📍</span>
+                  {ad.location}
+                  <span className="mx-2">•</span>
                   {new Date(ad.created_at).toLocaleDateString()}
-                </span>
+                </div>
               </div>
 
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-2 leading-tight">{ad.title}</h1>
-              <p className="text-3xl font-bold text-green-700 mb-8">{ad.price} kr</p>
-              
-              <div className="mb-8">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t.sections.description}</h3>
-                <p className="text-gray-600 whitespace-pre-wrap leading-relaxed text-base">
-                  {ad.description}
+              <div className="text-4xl font-bold text-blue-600 mb-8">
+                {ad.price} kr
+              </div>
+
+              <div className="prose prose-sm text-gray-600 mb-8">
+                <h3 className="text-gray-900 font-semibold mb-2">{t.sections.description}</h3>
+                <p className="whitespace-pre-line">{ad.description}</p>
+              </div>
+
+              {/* KONTAKT-KNAPP (Nu inkopplad!) */}
+              <div className="mt-auto pt-6 border-t border-gray-100">
+                {ad.status === 'active' ? (
+                  <Button 
+                    onClick={handleContact} 
+                    className="w-full py-4 text-lg font-bold shadow-lg shadow-blue-500/20"
+                    disabled={contacting}
+                  >
+                    {contacting ? 'Öppnar chatt...' : t.contact.button}
+                  </Button>
+                ) : (
+                   <div className="bg-gray-100 p-4 rounded-lg text-center text-gray-500 font-medium">
+                     Denna vara är inte längre till salu.
+                   </div>
+                )}
+                
+                {/* Info om att chatten är säker */}
+                <p className="text-xs text-center text-gray-400 mt-4">
+                  🔒 Handla tryggt. All kommunikation sker via Sokhar.
                 </p>
               </div>
 
-              <div className="flex items-center text-gray-600 mb-8 p-3 bg-gray-50 rounded-lg">
-                <span className="font-bold mr-2 text-gray-800">{t.sections.location}</span> 
-                {ad.location}
-              </div>
             </div>
-
-            {/* Kontaktknapp */}
-            <div className="mt-6">
-              <Button 
-                variant="secondary" 
-                className="w-full py-4 text-lg" 
-                onClick={() => alert(t.contact.alert)}
-              >
-                {t.contact.button}
-              </Button>
-            </div>
-
           </div>
         </div>
       </div>
