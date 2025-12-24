@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 
 import { DASHBOARD_TEXTS } from '../lib/content'
@@ -117,9 +118,20 @@ export default function Dashboard() {
           <p className="text-gray-600">{t.header.welcome} <span className="font-semibold">{user?.email}</span></p>
         </div>
         
-        <Button variant="link" onClick={handleSignOut}>
-          {t.header.logout}
-        </Button>
+        <div className="flex items-center gap-6">
+          {/* NYTT: Meddelande-ikon (Pratbubbla) */}
+          <Link href="/dashboard/messages" title="Mina meddelanden">
+            <div className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition cursor-pointer relative">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+          </Link>
+
+          <Button variant="link" onClick={handleSignOut}>
+            {t.header.logout}
+          </Button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-4xl space-y-6">

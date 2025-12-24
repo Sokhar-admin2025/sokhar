@@ -152,5 +152,29 @@ export const DASHBOARD_TEXTS = {
       loading: "Sparar..."
     },
     success: "Ändringarna sparade! Går tillbaka..."
-  }
-}
+  },
+  // ... (behåll edit ovanför och se till att det slutar med ett kommatecken)
+
+  // --- MEDDELANDEN (CHATT) ---
+  messages: {
+    navLabel: "Meddelanden",
+    pageTitle: "Mina meddelanden",
+    inbox: {
+      empty: "Inga meddelanden än. Hitta något fint att köpa! 💌",
+      loading: "Laddar konversationer...",
+      you: "Du"
+    },
+    chat: {
+      placeholder: "Skriv ett meddelande...",
+      send: "Skicka",
+      sending: "Skickar...",
+      noSelection: "👈 Välj en konversation i listan för att läsa.",
+      starter: "Här börjar er konversation om"
+    },
+    actions: {
+      contactSeller: "Skicka meddelande",
+      startChat: "Hej! Jag är intresserad av denna.", // Standardtext när man startar ny chatt
+      loginToChat: "Logga in för att chatta"
+    }
+  },
+} // <-- Filens slut
